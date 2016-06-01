@@ -1,5 +1,8 @@
 package persistence_manager;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class Page {
 
 	int 		taid;
@@ -7,6 +10,7 @@ public class Page {
 	int 		lsn;
 	boolean 	commit;
 	String 		data;
+	String 		prefix;
 	
 	public Page(int _taid,int _pid , int _lsn , boolean _commit, String _data){
 		taid = _taid;
@@ -14,6 +18,7 @@ public class Page {
 		lsn = _lsn;
 		commit = _commit;
 		data = _data;
+		prefix	= "Memory";
 	}
 	
 	public int getPid(){
@@ -25,6 +30,10 @@ public class Page {
 		return lsn;
 	}
 	
+	public String getData(){
+		return data;
+	}
+	
 	public String toString(){
 		return pid + "," + lsn + "," + data;
 	}
@@ -33,4 +42,19 @@ public class Page {
 		commit= true;
 	}
 	
+	public boolean getCommitState(){
+		return commit;
+	}
+	
+	
+	public void writePage(String Filename,String Line){
+		try {
+			String f = prefix+"/"+Filename;
+			FileWriter fw = new FileWriter(f);
+		    fw.flush();
+		    fw.write(Line);
+			fw.close();
+		}catch (IOException e){
+			System.out.println(e.getMessage());
+		}}
 }
