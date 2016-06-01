@@ -120,7 +120,7 @@ public class Buffer2 {
 				String Line 	= p.toString();
 				//Schreibe Datei auf die Festplatte
 				p.writePage(Filename, Line);
-				//TODO Nach dem write das commit Flag zurücksetzen 
+				//TODO Nach dem write das element an dieser Stelle aus dem Buffer löschen 
 				pageList.remove(i);
 				i--;
 			}
