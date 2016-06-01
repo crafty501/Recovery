@@ -6,7 +6,7 @@ public class Manager implements IManager{
 
 	int[] taids 		=  new int[500];
 	boolean[] free 		= new boolean[500];
-	Buffer2[] b 		= new Buffer2[500];
+	Buffer2 b 			= new Buffer2();
 	
 	
 	static final private Manager manager;
@@ -36,7 +36,7 @@ public class Manager implements IManager{
 	
 	
 	@Override
-	public int beginTransaction() {
+	public synchronized int beginTransaction() {
 		//Vergebe eindeutige Transaction ID 
 		
 		
@@ -47,17 +47,14 @@ public class Manager implements IManager{
 			 randomInt = randomGenerator.nextInt(500);
 		 }
 		 
-		 b[randomInt] = new Buffer2(randomInt);
 		 
 		 return randomInt;
 	}
 
 	@Override
-	public void commit(int taid) {
-		
+	public synchronized void commit(int taid) {
 		//The log is produced during the commit 
-		b[taid].commit();
-		//b[taid].print_log();
+		b.commit(taid);
 	}
 
 	
@@ -68,9 +65,13 @@ public class Manager implements IManager{
 	 * replaced completely by the given data.
 	 */
 	@Override
-	public void write(int taid, int pageid, String data) {
-		b[taid].write(pageid, data);
-		
+	public synchronized void write(int taid, int pageid, String data) {
+		b.write(taid,pageid, data);
+	
+		//TODO: 5er Regel implementieren,
+		//Nach jedem write soll geprüft werden ob der Biuffer mehr elemente hat als 5,
+		// wenn ja soll commited werden.(in den persistenten Speicher)
+		// Nur die die ein commit Flag haben.
 	}
 
 }

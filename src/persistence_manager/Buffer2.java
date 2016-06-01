@@ -33,110 +33,61 @@ public class Buffer2 {
 	//Log sequence number
 	//Data
 	
-	List<Boolean>	change_list;		// Deises Array speicher ob eine veränderung stattgefunden hat
 	//int 			last_element;
 	int 			max_index;
 	int 			lineNumber;
-	List<Integer> 	pageIdList;
-	List<Integer> 	lsnlist;
-	List<String>	dataList;
-
-	List<String> 	log;
+	
+	List<Page>      pageList;
+	
+    List<String> 	log;
 	int 			log_index;
-	int 			taid;
 	String 			prefix;
-	private String getElement(int index){
-		
-		int pageID 	= pageIdList.get(index);
-		int lsn		= lsnlist.get(index);
-		String data = dataList.get(index);
-		
-		return pageID + "," + lsn + "," + data;
-	}
+	
+	
 	/**
 	 * Erzeugt einen leeren Buffer.
 	 */
-	public Buffer2(int _taid){
+	public Buffer2(){
 		super();
 		//Index-Array Initialisieren
 		max_index 		= 1000;
 	    //last_element 	= 0;	
-		taid 			= _taid;
+		//taid 			= _taid;
 		prefix 			= "Memory";
-		pageIdList 	= new ArrayList<Integer>();
-		lsnlist 	= new ArrayList<Integer>();
-		dataList	= new ArrayList<String>();
-		
-		//Dies sollte atomar sein
-		load();
-		lineNumber = dataList.size();
-		
-		//System.out.println("lineNumber: "+lineNumber);
-		//System.exit(0);
-		change_list = new ArrayList<Boolean>();
-		for (int i = 0; i < lineNumber ; i++){
-			change_list.add(false);
-		}
-		
 		log = new ArrayList<String>();
 		
 	}
 	
-	private void append(int pageId,int lsn, String data){
-		pageIdList.add(pageId);
-		lsnlist.add(lsn);
-		dataList.add(data);
-		//last_element++;
-	}
-	/**
-	 * Diese Funktion muss die pages aus dem persistenten Speicher laden.
-	 * Der persistente Speicher soll als Dateien auf der Festplatte 
-	 * representiert werden 
-	 */
-	private void load(){
+	private void append(int taid,int pageId,int lsn, String data){
 		
-		String[] entries = new File( prefix + "/." ).list();
-		for(int i = 0 ; i < entries.length ; i++){
-			String filename = prefix + "/" + entries[i];
-			//System.out.println(filename);
-			try {
-			BufferedReader br = new BufferedReader(new FileReader(filename));
-			
-		    String line 	= br.readLine();
-			String[] fields = line.split(",");
-	    	int pageid		= Integer.parseInt(fields[0]);
-	    	int lsn 		= Integer.parseInt(fields[1]);	 
-	        append(pageid, lsn, fields[2]);
-	        //System.out.println(fields[2]);
-	        br.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		
-		
+		Page p = new Page(taid,pageId,lsn,false,data);
+		pageList.add(p);
+	
 	}
 	
-	public void write(int pageId,String Data){	
+	public void write(int taid,int pageId,String data){	
 		boolean written = false;
-		for (int i = 0 ; i < dataList.size() ; i++){
-			int _pid = this.pageIdList.get(i);
-			int _lsn = this.lsnlist.get(i);
+		
+		
+		
+		
+		for (int i = 0 ; i < pageList.size() ; i++){
+			int pid = pageList.get(i).getPid();
+			int lsn = pageList.get(i).getLsn();
 			//Update data 
-			if((_pid == pageId)){
-				change_list.set(i, true);
-				dataList.set(i, Data);
-				_lsn++;
-				lsnlist.set(i, _lsn);
+			if((pid == pageId)){
+				lsn++;	
+				Page p = new Page(taid,pid, lsn, false, data) ;
+				pageList.set(i, p);
 				written = true;
 			}
 		}
 		//Append data
 		//Wenn ein Eintrag komplett neu ist
 		if(!written){
-			append(pageId, 0, Data);
+			//LSN auslesen 
+			int lsn_file = readLSNFromPage(String.valueOf(pageId));
+			append(taid,pageId, lsn_file, data);
 		}
 		
 		
@@ -145,32 +96,37 @@ public class Buffer2 {
 	/**
 	 * Diese funktion schreibt den buffer in den persistenten speicher
 	 */
-	public void commit(){
-		//Override old/existing Page	
-			for(int x = 0; x < dataList.size(); x++ ){
-				if(change_list.get(x)){
-					int pid 	= pageIdList.get(x);
-					int lsn 	= lsnlist.get(x);
-					String data = dataList.get(x);
-					String append = pid + "," + lsn + "," + data;
-				
-					//Logs schreiben
-					String slog = "["+lsn+","+taid+","+pid+","+data+"]";
-					log.add(slog);
-				
-					addLog(slog);
-					writePage(String.valueOf(pid),append);
-					//System.out.println("append:"+append);
+	public void commit(int taid){
+		
+		//Setze das Commit Flag
+			for(int x = 0; x < pageList.size(); x++ ){
+					pageList.get(x).setCommit();
 				}
-			}
+	}
+			
+	private int readLSNFromPage(String Filename){
+		
+		
+		try{
+		BufferedReader br = new BufferedReader( new FileReader(prefix+"/"+Filename));
+		String line = br.readLine();
+		
+		String elements[] = line.split(",");
+		
+		return Integer.parseInt(elements[1]);
+		}catch(IOException e){
+			return -1;
+			
 		}
-	
-	
+		
+		
+	}
 	
 	private void writePage(String Filename,String Line){
 		try {
 			String f = prefix+"/"+Filename;
 			FileWriter fw = new FileWriter(f);
+			
 		    fw.flush();
 		    fw.write(Line);
 			fw.close();
@@ -210,13 +166,6 @@ public class Buffer2 {
 		}
 	
 	
-	public void print(){
-	
-		for (int i = 0 ; i < dataList.size(); i++){
-			String Zeile = getElement(i);
-			System.out.println(Zeile);
-		}
-	}
 	
 	public void print_log(){
 	
