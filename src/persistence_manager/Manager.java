@@ -8,7 +8,23 @@ public class Manager implements IManager{
 	boolean[] free 		= new boolean[500];
 	Buffer2[] b 		= new Buffer2[500];
 	
-	public Manager(){
+	
+	static final private Manager manager;
+	
+	
+	static {
+		try{
+			manager = new Manager();
+		}catch(Throwable e){
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+	
+	static public Manager getInstance(){
+		return manager;
+	}
+	
+	private Manager(){
 		super();
 		
 		for(int i = 0; i < free.length; i++){

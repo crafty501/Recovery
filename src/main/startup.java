@@ -15,7 +15,7 @@ public class startup {
 	
 	public static void main(String[] argsv) {
 		
-		m = new Manager();
+		m = Manager.getInstance();
 		clientList = new ArrayList();
 		
 		int i = 0; 
