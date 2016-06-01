@@ -52,7 +52,10 @@ public class Buffer2 {
 			int pid = pageList.get(i).getPid();
 			int lsn = pageList.get(i).getLsn();
 			//Update data 
+			//System.out.println(pid + " "+ pageId);
 			if((pid == pageId)){
+				System.out.println("Update");
+				System.exit(0);
 				lsn = lsn_file +1;	
 				Page p = new Page(taid,pid, lsn, false, data) ;
 				pageList.set(i, p);
@@ -75,7 +78,10 @@ public class Buffer2 {
 	public void commit(int taid){
 		
 			for(int x = 0; x < pageList.size(); x++ ){
-					pageList.get(x).setCommit();
+					Page p = pageList.get(x);
+					if(p.getTaid() == taid){
+						pageList.get(x).setCommit();
+					}
 				}
 	}
 			
@@ -133,10 +139,13 @@ public class Buffer2 {
 		Page p = pageList.get(i);
 		if(p.getCommitState()){
 			int pid = p.getPid();
+			
 			int lsn = p.getLsn();
 			String data = p.getData();
-			String Line = "[" + taid + "," + pid + "," +lsn + ","+ data +"]";
+			
+			String Line =  taid + "," + pid + "," +lsn + ","+ data;
 			addLog(Line);
+			System.out.print("..done");
 			
 		}
 			

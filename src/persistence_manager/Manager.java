@@ -59,11 +59,24 @@ public class Manager implements IManager{
 	
 	@Override
 	public synchronized void write(int taid, int pageid, String data) {
-		b.write(taid,pageid, data);
+		b.write(taid,pageid,data);
+		
 		if(b.size() >= 5 ){
+			
 			
 			System.out.println("Lege Logeintrag an");
 			b.writeToLog(taid);
+			
+			
+			//Simuliere einen System-Crash
+			Random randomGenerator = new Random();
+			int randomInt = randomGenerator.nextInt(10);
+			if(randomInt == 6){
+				System.out.println("System-Crash");
+				System.exit(0);
+			}
+			
+			
 			
 			System.out.println("Write to persistent");
 			b.writetoPersistent();

@@ -25,6 +25,9 @@ public class Page {
 		return pid;
 	}
 	
+	public int getTaid(){
+		return taid;
+	}
 	
 	public int getLsn(){
 		return lsn;
