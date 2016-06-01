@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class Manager implements IManager{
 
-	int[] taids 		=  new int[500];
+	int[] taids 		= new int[500];
 	boolean[] free 		= new boolean[500];
 	Buffer2 b 			= new Buffer2();
 	
@@ -67,11 +67,15 @@ public class Manager implements IManager{
 	@Override
 	public synchronized void write(int taid, int pageid, String data) {
 		b.write(taid,pageid, data);
+		if(b.size() >= 5 ){
+			
+			System.out.println("Lege Logeintrag an");
+			b.writeToLog(taid);
+			
+			System.out.println("Write to persistent");
+			b.writetoPersistent();
+		}
 	
-		//TODO: 5er Regel implementieren,
-		//Nach jedem write soll geprüft werden ob der Biuffer mehr elemente hat als 5,
-		// wenn ja soll commited werden.(in den persistenten Speicher)
-		// Nur die die ein commit Flag haben.
 	}
 
 }
