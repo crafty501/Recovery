@@ -124,7 +124,6 @@ public class Buffer2 {
 				pageList.remove(i);
 				i--;
 			}
-			
 		}
 	}
 
@@ -147,8 +146,7 @@ public class Buffer2 {
 	
 	
 	private void addLog(String Line){
-		try{
-			
+		try{	
 			String Filename = "Log";
 			BufferedReader br = new BufferedReader(new FileReader(Filename));
 			
@@ -173,10 +171,7 @@ public class Buffer2 {
 		
 		}
 	
-	
-	
 	public void print_log(){
-	
 		for(int i = 0 ; i < log.size() ; i++){
 			String Zeile = log.get(i);
 			System.out.println(Zeile);
