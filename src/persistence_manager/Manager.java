@@ -39,7 +39,6 @@ public class Manager implements IManager{
 	public synchronized int beginTransaction() {
 		//Vergebe eindeutige Transaction ID 
 		
-		
 		 Random randomGenerator = new Random();
 		 int randomInt = randomGenerator.nextInt(500);
 		
@@ -58,12 +57,6 @@ public class Manager implements IManager{
 	}
 
 	
-	/**
-	 * writes the given data with the given page ID
-	 * on behalf of the given transaction to the buffer. 
-	 * If the given page already exists, its content is
-	 * replaced completely by the given data.
-	 */
 	@Override
 	public synchronized void write(int taid, int pageid, String data) {
 		b.write(taid,pageid, data);
