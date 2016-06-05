@@ -1,5 +1,8 @@
 package persistence_manager;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -11,7 +14,7 @@ public class Page {
 	private boolean commit;
 	private String data;
 
-	private static final String PREFIX = "Memory";
+	private static final String PREFIX = "Persistent";
 
 	public Page(int taid, int pageid, int lsn, String data) {
 		this.taid = taid;
@@ -67,5 +70,25 @@ public class Page {
 		lsn = newpage.getLsn();
 		data = newpage.getData();
 		taid = newpage.getTaid();
+	}
+	
+	
+	public static Page loadPersistantPageById(int pageid) {
+		try (BufferedReader br = new BufferedReader(new FileReader(PREFIX + "/" + pageid))) {
+			String line = br.readLine();
+			String elements[] = line.split(",");
+			int lsn = Integer.parseInt(elements[1]);
+			String data = elements[2];
+			return new Page(-1, pageid, lsn, data);
+		} catch (FileNotFoundException  e) {
+			System.out.println(e.getMessage());
+			return null;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			return null;
+		}
+
 	}
 }
