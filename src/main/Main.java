@@ -7,7 +7,7 @@ import java.util.Random;
 import persistence_manager.IManager;
 import persistence_manager.Manager;
 
-public class startup {
+public class Main {
 
 	static IManager m;
 	static List<Client> clientList;
@@ -16,7 +16,7 @@ public class startup {
 	public static void main(String[] argsv) {
 		
 		m = Manager.getInstance();
-		clientList = new ArrayList();
+		clientList = new ArrayList<Client>();
 		
 		int i = 0; 
 		while (i < 20){
