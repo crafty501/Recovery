@@ -1,87 +1,124 @@
 package persistence_manager;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
-public class Manager implements IManager{
+public class Manager implements IManager {
 
-	int[] taids 		= new int[500];
-	boolean[] free 		= new boolean[500];
-	Buffer2 b 			= new Buffer2();
-	
-	
+	private List<Integer> activeTransactions;
+
+	private List<Page> pageBuffer;
+
+	private static int lsn = 0;
+
+
+	private static final String LOGFILENAME = "Log";
+	PrintWriter logOut;
+
 	static final private Manager manager;
-	
-	
+
 	static {
-		try{
+		try {
 			manager = new Manager();
-		}catch(Throwable e){
+		} catch (Throwable e) {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
-	
-	static public Manager getInstance(){
+
+	static public Manager getInstance() {
 		return manager;
 	}
-	
-	private Manager(){
-		super();
-		
-		for(int i = 0; i < free.length; i++){
-			free[i]= true;
+
+	private Manager() {
+
+		activeTransactions = new ArrayList<Integer>();
+		pageBuffer = new ArrayList<Page>();
+
+		try {
+			FileWriter fw = new FileWriter(LOGFILENAME);
+			BufferedWriter bw = new BufferedWriter(fw);
+			logOut = new PrintWriter(bw);
+		} catch (IOException e) {
+			System.err.println("logfile init error");
+			e.printStackTrace();
 		}
 		
-		
 	}
-	
-	
+
 	@Override
 	public synchronized int beginTransaction() {
-		//Vergebe eindeutige Transaction ID 
-		
-		 Random randomGenerator = new Random();
-		 int randomInt = randomGenerator.nextInt(500);
-		
-		 while(!free[randomInt]){
-			 randomInt = randomGenerator.nextInt(500);
-		 }
-		 
-		 
-		 return randomInt;
+		// Vergebe eindeutige Transaction ID
+
+		Random randomGenerator = new Random();
+		int randomInt = randomGenerator.nextInt();
+
+		while (activeTransactions.contains(randomInt)) {
+			randomInt = randomGenerator.nextInt(500);
+		}
+
+		activeTransactions.add(randomInt);
+
+		return randomInt;
 	}
 
 	@Override
 	public synchronized void commit(int taid) {
-		//The log is produced during the commit 
-		b.commit(taid);
+		// The log is produced during the commit
+		pageBuffer.forEach(page -> {
+			if (page.getTaid() == taid) {
+				page.setCommit();
+			}
+		});
+		
+		logOut.println(taid + ": commited");
+		logOut.flush();
+		activeTransactions.remove(activeTransactions.indexOf(taid));
 	}
 
-	
 	@Override
 	public synchronized void write(int taid, int pageid, String data) {
-		b.write(taid,pageid,data);
+
+		int lsn = writeToLog(taid, pageid, data);
+
 		
-		if(b.size() >= 5 ){
-			
-			
-			System.out.println("Lege Logeintrag an");
-			b.writeToLog(taid);
-			
-			
-			//Simuliere einen System-Crash
-			Random randomGenerator = new Random();
-			int randomInt = randomGenerator.nextInt(10);
-			if(randomInt == 6){
-				System.out.println("System-Crash");
-				System.exit(0);
+		Page newpage = new Page(taid, pageid, lsn, data);
+		
+		boolean isupdated = false;
+		for (int i = 0; i < pageBuffer.size(); i++) {
+			Page page = pageBuffer.get(i);
+			if (page.getPageid() == newpage.getPageid()) {
+				page.update(newpage);
+				isupdated = true;
 			}
-			
-			
-			
-			System.out.println("Write to persistent");
-			b.writetoPersistent();
 		}
-	
+		if (!isupdated) {
+			pageBuffer.add(newpage);
+		}
+		
+				
+		if (pageBuffer.size() > 5) {
+			for (Iterator<Page> i = pageBuffer.iterator(); i.hasNext();) {
+				Page page = i.next();
+			    if (page.isCommit()) {
+			    	page.persist();
+			        i.remove();
+			    }
+			}
+		}
 	}
+
+	public int writeToLog(int taid, int pageid, String data) {
+		lsn++;
+		logOut.println(lsn + "," + taid + "," + pageid + ","+data);
+		logOut.flush();
+		return lsn;
+	}
+
 
 }
