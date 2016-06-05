@@ -5,59 +5,67 @@ import java.io.IOException;
 
 public class Page {
 
-	int 		taid;
-	int 		pid;
-	int 		lsn;
-	boolean 	commit;
-	String 		data;
-	String 		prefix;
-	
-	public Page(int _taid,int _pid , int _lsn , boolean _commit, String _data){
-		taid = _taid;
-		pid = _pid;
-		lsn = _lsn;
-		commit = _commit;
-		data = _data;
-		prefix	= "Memory";
+	private int taid;
+	private int pageid;
+	private int lsn;
+	private boolean commit;
+	private String data;
+
+	private static final String PREFIX = "Memory";
+
+	public Page(int taid, int pageid, int lsn, String data) {
+		this.taid = taid;
+		this.pageid = pageid;
+		this.lsn = lsn;
+		this.data = data;
 	}
-	
-	public int getPid(){
-		return pid;
+
+	public int getPageid() {
+		return pageid;
 	}
-	
-	public int getTaid(){
+
+	public int getTaid() {
 		return taid;
 	}
-	
-	public int getLsn(){
+
+	public int getLsn() {
 		return lsn;
 	}
-	
-	public String getData(){
+
+	public String getData() {
 		return data;
 	}
-	
-	public String toString(){
-		return pid + "," + lsn + "," + data;
+
+	public String toString() {
+		return pageid + "," + lsn + "," + data;
 	}
-	
-	public void setCommit(){
-		commit= true;
+
+	public void setCommit() {
+		commit = true;
 	}
-	
-	public boolean getCommitState(){
+
+	public boolean isCommit() {
 		return commit;
 	}
-	
-	
-	public void writePage(String Filename,String Line){
+
+	public void persist() {
+		
+		String Filename = String.valueOf(pageid);
+		
 		try {
-			String f = prefix+"/"+Filename;
+			String f = PREFIX + "/" + Filename;
 			FileWriter fw = new FileWriter(f);
-		    fw.flush();
-		    fw.write(Line);
+			fw.flush();
+			fw.write(this.toString());
 			fw.close();
-		}catch (IOException e){
+		} catch (IOException e) {
 			System.out.println(e.getMessage());
-		}}
+		}
+	}
+
+	public void update(Page newpage) {
+		lsn = newpage.getLsn();
+		data = newpage.getData();
+		taid = newpage.getTaid();
+	}
 }

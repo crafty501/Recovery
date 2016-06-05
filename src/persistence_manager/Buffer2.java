@@ -14,6 +14,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 
+/**
+ * Klasse wird nicht mehr benutzt
+ * 
+ *
+ */
+
+
 public class Buffer2 {
 
 	
@@ -40,7 +47,7 @@ public class Buffer2 {
 	
 	private void append(int taid,int pageId,int lsn, String data){
 		
-		Page p = new Page(taid,pageId,lsn,false,data);
+		Page p = new Page(taid,pageId,lsn,data);
 		pageList.add(p);
 	
 	}
@@ -49,7 +56,7 @@ public class Buffer2 {
 		boolean written = false;
 		int lsn_file = readLSNFromPage(String.valueOf(pageId));
 		for (int i = 0 ; i < pageList.size() ; i++){
-			int pid = pageList.get(i).getPid();
+			int pid = pageList.get(i).getPageid();
 			int lsn = pageList.get(i).getLsn();
 			//Update data 
 			//System.out.println(pid + " "+ pageId);
@@ -57,7 +64,7 @@ public class Buffer2 {
 				System.out.println("Update");
 				System.exit(0);
 				lsn = lsn_file +1;	
-				Page p = new Page(taid,pid, lsn, false, data) ;
+				Page p = new Page(taid,pid, lsn, data) ;
 				pageList.set(i, p);
 				written = true;
 			}
@@ -104,7 +111,7 @@ public class Buffer2 {
 		
 		int ccount = 0 ;
 		for(int i = 0; i < pageList.size() ; i++){
-			if(pageList.get(i).getCommitState()){
+			if(pageList.get(i).isCommit()){
 				ccount++;
 			}
 		}
@@ -121,11 +128,11 @@ public class Buffer2 {
 		int index = 0;
 		for(int i = 0; i < pageList.size(); i++){
 			Page p = pageList.get(i);
-			if(p.getCommitState()){
-				String Filename = String.valueOf(p.getPid());
+			if(p.isCommit()){
+				String Filename = String.valueOf(p.getPageid());
 				String Line 	= p.toString();
 				//Schreibe Datei auf die Festplatte
-				p.writePage(Filename, Line);
+				p.persist();
 				//TODO Nach dem write das Element an dieser Stelle aus dem Buffer löschen 
 				pageList.remove(i);
 				i--;
@@ -137,8 +144,8 @@ public class Buffer2 {
 	public void writeToLog(int taid){
 		for(int i = 0 ; i  < pageList.size(); i++){
 		Page p = pageList.get(i);
-		if(p.getCommitState()){
-			int pid = p.getPid();
+		if(p.isCommit()){
+			int pid = p.getPageid();
 			
 			int lsn = p.getLsn();
 			String data = p.getData();
