@@ -113,7 +113,7 @@ public class Manager implements IManager {
 		}
 	}
 
-	public int writeToLog(int taid, int pageid, String data) {
+	private int writeToLog(int taid, int pageid, String data) {
 		lsn++;
 		logOut.println(lsn + "," + taid + "," + pageid + ","+data);
 		logOut.flush();
