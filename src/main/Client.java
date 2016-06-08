@@ -1,14 +1,22 @@
 package main;
 
+import java.util.Random;
+
 import persistence_manager.IManager;
 
-public class Client {
+public class Client extends Thread {
 
 	private IManager manager;
+	private int start;
+	private int stop;
 	
-	public Client(IManager m){
+	public Client(IManager m, int s){
 		
 		manager = m;
+		
+		start = s;
+		stop = start + 9;
+		
 	}
 	/**
 	 * Mit dieser Methode kann einem Clienten vorgegeben werden, welche writes 
@@ -23,7 +31,7 @@ public class Client {
 	 * Dabei ist die Nummer vor den Strings die PageID
 	 * @param writes
 	 */
-	public void Transaction(String[] writes){
+	public void transaction(String[] writes){
 		
 		
 		
@@ -38,5 +46,42 @@ public class Client {
 		}
 		
 		manager.commit(taid);
+	}
+	
+	
+	
+	@Override
+	public void run() {		
+		while(true){
+		//Mache eine Kunstpause
+				Random randomGenerator = new Random();
+				int miliseconds = randomGenerator.nextInt(1500);
+				try {
+					Thread.sleep(miliseconds);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				
+		int pagecounter = 0;
+		String  S 	= "Kolja:Test:Windows:Mac:Ubuntu:Linux:Biber:Wacken:9:10";
+		String[] s	= S.split(":");
+		String[] writes = new String[10];
+		int x = 0;
+		for(int u = start; u < stop+1 ; u++){
+			String write =u+":"+s[x];
+			writes[x] = write;
+			x++;
+		}
+		
+		transaction(writes);
+		
+		//clientList.add(c);	
+		}
+		
+		
+		
+		
 	}
 }

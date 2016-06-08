@@ -11,7 +11,7 @@ public class Main {
 
 	static IManager m;
 	static List<Client> clientList;
-	static int start,stop;
+	static int start;
 	
 	public static void main(String[] argsv) {
 		
@@ -21,43 +21,10 @@ public class Main {
 		int i = 0; 
 		while (i < 20){
 			start = 10 + (i* 10) ;
-			stop  = start + 9;
-			
-			Thread t = new Thread(new Runnable() {
-				@Override
-				public void run() {		
-					Client c = new Client(m);
-					int pagecounter = 0;
-					String  S 	= "Kolja:Test:Windows:Mac:Ubuntu:Linux:Biber:Wacken:9:10";
-					String[] s	= S.split(":");
-					String[] writes = new String[10];
-					int x = 0;
-					for(int u = start; u < stop+1 ; u++){
-						String write =u+":"+s[x];
-						writes[x] = write;
-						x++;
-					}
-					c.Transaction(writes);
-					clientList.add(c);	
-				}
-		});
-	
-		
-		//Mache eine Kunstpause
-		Random randomGenerator = new Random();
-		int miliseconds = randomGenerator.nextInt(1500);
-		try {
-			Thread.sleep(miliseconds);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//stop  = start + 9;
+			Client c = new Client(m,start);
+			c.start();
+			i++;
 		}
-		
-		
-		t.run();
-		i++;
-		
-		
 	}
-}
 }

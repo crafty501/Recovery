@@ -62,7 +62,7 @@ public class Manager implements IManager {
 		// Vergebe eindeutige Transaction ID
 
 		Random randomGenerator = new Random();
-		int randomInt = randomGenerator.nextInt();
+		int randomInt = randomGenerator.nextInt(500);
 
 		while (activeTransactions.contains(randomInt)) {
 			randomInt = randomGenerator.nextInt(500);
@@ -76,11 +76,16 @@ public class Manager implements IManager {
 	@Override
 	public synchronized void commit(int taid) {
 		// The log is produced during the commit
-		pageBuffer.forEach(page -> {
-			if (page.getTaid() == taid) {
-				page.setCommit();
+		//pageBuffer.forEach(page -> {
+			
+			
+	   for(int i = 0 ; i < pageBuffer.size(); i++){		
+			if (pageBuffer.get(i).getTaid() == taid) {
+				pageBuffer.get(i).setCommit();
 			}
-		});
+	    }
+			
+		
 
 		logOut.println(COMMITFLAG + "," + taid);
 		logOut.flush();
@@ -140,8 +145,8 @@ public class Manager implements IManager {
 	 * 
 	 */
 	private void recover() {
-		try (BufferedReader br = new BufferedReader(new FileReader(Manager.LOGFILENAME))) {
-
+		try  {
+			BufferedReader br = new BufferedReader(new FileReader(Manager.LOGFILENAME));
 			int recoveryCount = 0;
 
 			String line;
@@ -151,11 +156,11 @@ public class Manager implements IManager {
 				if (elements[0].equals(Manager.COMMITFLAG)) {
 					//System.out.println(elements[1]);
 					int taid = Integer.parseInt(elements[1]);
-					pageBuffer.forEach(page -> {
-						if (page.getTaid() == taid) {
-							page.setCommit();
+					for(int i = 0 ; i < pageBuffer.size(); i++){	
+						if (pageBuffer.get(i).getTaid() == taid) {
+							pageBuffer.get(i).setCommit();
 						}
-					});
+					}
 				} else {
 					// erstelle Page von der Log-File
 					// [taid,pid,lsn,data]
@@ -178,9 +183,9 @@ public class Manager implements IManager {
 							recoveryCount++;
 						}
 					} else {
-						System.out.println("REDO at page:" + pageid);
-						pageBuffer.add(logPage);
-						recoveryCount++;
+						//System.out.println("REDO at page:" + pageid);
+						//pageBuffer.add(logPage);
+						//recoveryCount++;
 					}
 					
 					//führe lsn alte weiter
@@ -189,7 +194,7 @@ public class Manager implements IManager {
 				}
 			}
 
-			System.out.println("Es mussten " + recoveryCount + " REDO's durchgeführt werden");
+			System.out.println("Es mussten " + recoveryCount + " REDO's durchgefuehrt werden");
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 		}

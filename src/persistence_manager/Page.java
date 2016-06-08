@@ -73,12 +73,16 @@ public class Page {
 	}
 	
 	
-	public static Page loadPersistantPageById(int pageid) {
-		try (BufferedReader br = new BufferedReader(new FileReader(PREFIX + "/" + pageid))) {
+	public static Page loadPersistantPageById(int pageid){
+				
+	
+		try  {
+			BufferedReader br = new BufferedReader(new FileReader(PREFIX + "/" + pageid));
 			String line = br.readLine();
 			String elements[] = line.split(",");
 			int lsn = Integer.parseInt(elements[1]);
 			String data = elements[2];
+			br.close();
 			return new Page(-1, pageid, lsn, data);
 		} catch (FileNotFoundException  e) {
 			System.out.println(e.getMessage());
